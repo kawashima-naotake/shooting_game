@@ -29,19 +29,20 @@ let lastEnemySpawn = 0;
 // Event listeners
 document.addEventListener('keydown', handleKeyDown);
 document.addEventListener('keyup', handleKeyUp);
+document.addEventListener('keydown', handleRestartKey); // Added for restart
 
 let rightPressed = false;
 let leftPressed = false;
 
 function handleKeyDown(event) {
+    if (gameOver) return; // Don't process game controls if game is over
+
     if (event.key === 'Right' || event.key === 'ArrowRight') {
         rightPressed = true;
     } else if (event.key === 'Left' || event.key === 'ArrowLeft') {
         leftPressed = true;
     } else if (event.key === ' ' || event.key === 'Spacebar') {
-        if (!gameOver) {
-            shootProjectile();
-        }
+        shootProjectile();
     }
 }
 
@@ -51,6 +52,31 @@ function handleKeyUp(event) {
     } else if (event.key === 'Left' || event.key === 'ArrowLeft') {
         leftPressed = false;
     }
+}
+
+function handleRestartKey(event) {
+    if (gameOver) {
+        // Check if any key is pressed. More specific key checks can be added if needed.
+        resetGame();
+    }
+}
+
+
+function resetGame() {
+    gameOver = false;
+    score = 0;
+    playerX = canvas.width / 2 - playerWidth / 2;
+    projectiles = [];
+    enemies = [];
+    lastEnemySpawn = Date.now(); // Reset spawn timer
+
+    // Ensure player object is also reset if its properties were changed directly
+    player.x = playerX;
+
+    // No need to call gameLoop() here if it's already running via requestAnimationFrame
+    // If gameLoop was explicitly stopped, it would need a restart.
+    // Our current gameLoop continues running but just draws gameOver screen.
+    // Once gameOver is false, it will resume normal game drawing.
 }
 
 function shootProjectile() {
@@ -190,7 +216,7 @@ function drawGameOver() {
         ctx.font = '30px Arial';
         ctx.fillText('Final Score: ' + score, canvas.width / 2, canvas.height / 2 + 20);
         ctx.font = '20px Arial';
-        ctx.fillText('Press any key to restart (Not implemented yet)', canvas.width / 2, canvas.height / 2 + 60);
+        ctx.fillText('Press any key to restart', canvas.width / 2, canvas.height / 2 + 60);
     }
 }
 
